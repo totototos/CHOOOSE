@@ -1,43 +1,49 @@
-import { test, expect, BrowserContext, Page } from '@playwright/test';
+import { test, expect, BrowserContext, Page } from '@playwright/test'
 
+test('Check if Sales tax is displayed for flights from Canada airport', async ({
+  page,
+}) => {
+  await openURLandCloseCookies(page)
+  await selectAirportFrom(page, 'canada')
+  await selectRandomAirporTo(page)
+  await calculateAndGoToNextPage(page)
 
-test('Check if Sales tax is displayed for flights from Canada airport', async ({ page }) => {
-await openURLandCloseCookies(page)
-await selectAirportFrom(page, 'canada')
-await selectRandomAirporTo(page)
-await calculateAndGoToNextPage(page)
+  await expect(page.locator(`//p[contains(text(), 'Sales tax')]`)).toBeVisible()
+  await expect(
+    page.locator(`//p[contains(text(), 'Sales tax')]/following-sibling::p`)
+  ).toBeVisible()
 
-await expect(page.locator(`//p[contains(text(), 'Sales tax')]`)).toBeVisible()
-await expect(page.locator(`//p[contains(text(), 'Sales tax')]/following-sibling::p`)).toBeVisible()
+  await goToPayment(page)
 
-await goToPayment(page)
+  await expect(page.locator(`//p[contains(text(), 'Sales tax')]`)).toBeVisible()
+  await expect(
+    page.locator(`//p[contains(text(), 'Sales tax')]/following-sibling::p`)
+  ).toBeVisible()
 
-await expect(page.locator(`//p[contains(text(), 'Sales tax')]`)).toBeVisible()
-await expect(page.locator(`//p[contains(text(), 'Sales tax')]/following-sibling::p`)).toBeVisible()
+  await page.close()
+})
 
-await page.close()
-});
-
-test('Check if user is unable to proceed without filling added flight stop', async ({page}) => {
+test('Check if user is unable to proceed without filling added flight stop', async ({
+  page,
+}) => {
   await openURLandCloseCookies(page)
   await selectRandomAirporFrom(page)
   await selectRandomAirporTo(page)
   await addNewStop(page)
- await page.getByRole('button', { name: 'Calculate' }).click()
-  await expect(page.getByText('All added stops must be filled in')).toBeVisible()
+  await page.getByRole('button', { name: 'Calculate' }).click()
+  await expect(
+    page.getByText('All added stops must be filled in')
+  ).toBeVisible()
   await page.close()
-});
+})
 
-
-
-
-async  function openURLandCloseCookies(page) {
+async function openURLandCloseCookies(page) {
   await page.goto('https://choooselpbatest.azureedge.net/?cartView=true')
-   const addressCarbonFootprint = page.getByText('Address your carbon footprint')
+  const addressCarbonFootprint = page.getByText('Address your carbon footprint')
   const acceptCookies = page.getByText('AcceptCookies')
   const closeCookies = page.getByRole('button', { name: 'Close' })
-  await expect(addressCarbonFootprint).toBeVisible({timeout: 10000})
-  await closeCookies.click({timeout: 4000})
+  await expect(addressCarbonFootprint).toBeVisible({ timeout: 10000 })
+  await closeCookies.click({ timeout: 4000 })
 }
 
 async function selectAirportFrom(page, searchByText?: string) {
@@ -45,7 +51,9 @@ async function selectAirportFrom(page, searchByText?: string) {
   await page.getByLabel('From').fill(searchByText)
   await page.locator('.css-ipwess').first().click()
   const randomNumber = getRandomNumber()
-  await page.locator(`#react-select-2-option-0-${randomNumber}[role=button]`).click()
+  await page
+    .locator(`#react-select-2-option-0-${randomNumber}[role=button]`)
+    .click()
 }
 
 async function selectRandomAirporFrom(page) {
@@ -55,7 +63,9 @@ async function selectRandomAirporFrom(page) {
   await page.locator('.css-ipwess').first().click()
   await page.waitForTimeout(500)
   const randomNumber = getRandomNumber()
-  await page.locator(`#react-select-2-option-0-${randomNumber}[role=button]`).click()
+  await page
+    .locator(`#react-select-2-option-0-${randomNumber}[role=button]`)
+    .click()
 }
 
 async function selectAirportTo(page, searchByText?: string) {
@@ -63,7 +73,9 @@ async function selectAirportTo(page, searchByText?: string) {
   await page.getByLabel('To').fill(searchByText)
   await page.locator('.css-ipwess').last().click()
   const randomNumber = getRandomNumber()
-  await page.locator(`#react-select-3-option-0-${randomNumber}[role=button]`).click()
+  await page
+    .locator(`#react-select-3-option-0-${randomNumber}[role=button]`)
+    .click()
 }
 
 async function selectRandomAirporTo(page) {
@@ -73,7 +85,9 @@ async function selectRandomAirporTo(page) {
   await page.locator('.css-ipwess').last().click()
   await page.waitForTimeout(500)
   const randomNumber = getRandomNumber()
-  await page.locator(`#react-select-3-option-0-${randomNumber}[role=button]`).click()
+  await page
+    .locator(`#react-select-3-option-0-${randomNumber}[role=button]`)
+    .click()
 }
 
 function getRandomChar() {
@@ -88,7 +102,9 @@ function getRandomNumber() {
 
 async function calculateAndGoToNextPage(page) {
   await page.getByRole('button', { name: 'Calculate' }).click()
- await expect(page.getByRole('button', { name: 'Go to payment' })).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Go to payment' })
+  ).toBeVisible()
 }
 
 async function goToPayment(page) {
