@@ -3,22 +3,38 @@ import { test, expect, BrowserContext, Page } from '@playwright/test'
 test('Check if Sales tax is displayed for flights from Canada airport', async ({
   page,
 }) => {
-  await openURLandCloseCookies(page)
-  await selectAirportFrom(page, 'canada')
-  await selectRandomAirporTo(page)
-  await calculateAndGoToNextPage(page)
+  await test.step('Open website', async () => {
+    await openURLandCloseCookies(page)
+  })
+  await test.step('Select canadian airoport to depart from', async () => {
+    await selectAirportFrom(page, 'canada')
+  })
+  await test.step('Select random destination airport', async () => {
+    await selectRandomAirporTo(page)
+  })
+  await test.step('Click calculate to go to next page', async () => {
+    await calculateAndGoToNextPage(page)
+  })
 
-  await expect(page.locator(`//p[contains(text(), 'Sales tax')]`)).toBeVisible()
-  await expect(
-    page.locator(`//p[contains(text(), 'Sales tax')]/following-sibling::p`)
-  ).toBeVisible()
+  await test.step('Verify if Sales tax label and value are visible on calculation page', async () => {
+    await expect(
+      page.locator(`//p[contains(text(), 'Sales tax')]`)
+    ).toBeVisible()
+    await expect(
+      page.locator(`//p[contains(text(), 'Sales tax')]/following-sibling::p`)
+    ).toBeVisible()
+  })
 
   await goToPayment(page)
 
-  await expect(page.locator(`//p[contains(text(), 'Sales tax')]`)).toBeVisible()
-  await expect(
-    page.locator(`//p[contains(text(), 'Sales tax')]/following-sibling::p`)
-  ).toBeVisible()
+  await test.step('Verify if Sales tax label and value are visible on payment page', async () => {
+    await expect(
+      page.locator(`//p[contains(text(), 'Sales tax')]`)
+    ).toBeVisible()
+    await expect(
+      page.locator(`//p[contains(text(), 'Sales tax')]/following-sibling::p`)
+    ).toBeVisible()
+  })
 
   await page.close()
 })
@@ -26,14 +42,22 @@ test('Check if Sales tax is displayed for flights from Canada airport', async ({
 test('Check if user is unable to proceed without filling added flight stop', async ({
   page,
 }) => {
-  await openURLandCloseCookies(page)
-  await selectRandomAirporFrom(page)
-  await selectRandomAirporTo(page)
+  await test.step('Open website', async () => {
+    await openURLandCloseCookies(page)
+  })
+  await test.step('Select random departure airoport', async () => {
+    await selectRandomAirporFrom(page)
+  })
+  await test.step('Select random destination airport', async () => {
+    await selectRandomAirporTo(page)
+  })
   await addNewStop(page)
-  await page.getByRole('button', { name: 'Calculate' }).click()
-  await expect(
-    page.getByText('All added stops must be filled in')
-  ).toBeVisible()
+  await test.step('Check if by clicking calculate with new stop being empty, error message will appear instead of loading next page', async () => {
+    await page.getByRole('button', { name: 'Calculate' }).click()
+    await expect(
+      page.getByText('All added stops must be filled in')
+    ).toBeVisible()
+  })
   await page.close()
 })
 
@@ -61,7 +85,7 @@ async function selectRandomAirporFrom(page) {
   const randomChar = getRandomChar()
   await page.getByLabel('From').fill(randomChar)
   await page.locator('.css-ipwess').first().click()
-  await page.waitForTimeout(500)
+  await page.waitForTimeout(800)
   const randomNumber = getRandomNumber()
   await page
     .locator(`#react-select-2-option-0-${randomNumber}[role=button]`)
@@ -83,7 +107,7 @@ async function selectRandomAirporTo(page) {
   const randomChar = getRandomChar()
   await page.getByLabel('To').fill(randomChar)
   await page.locator('.css-ipwess').last().click()
-  await page.waitForTimeout(500)
+  await page.waitForTimeout(800)
   const randomNumber = getRandomNumber()
   await page
     .locator(`#react-select-3-option-0-${randomNumber}[role=button]`)
